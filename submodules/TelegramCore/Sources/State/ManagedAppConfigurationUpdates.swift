@@ -31,6 +31,8 @@ func updateAppConfigurationOnce(postbox: Postbox, network: Network) -> Signal<Vo
                         var configuration = configuration
                         configuration.data = data
                         configuration.hash = result.hash
+                        // Default to true so search remains disabled unless explicitly enabled by remote config
+                        AppConfiguration.disableSearch = data["ios_disable_search"] as? Bool ?? true
                         return configuration
                     })
                     

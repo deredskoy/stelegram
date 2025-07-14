@@ -4,6 +4,9 @@ import Postbox
 public struct AppConfiguration: Codable, Equatable {
     public var data: JSON?
     public var hash: Int32
+    // Search functionality is disabled by default.
+    // Remote configuration can toggle this flag by setting `ios_disable_search`.
+    public static var disableSearch: Bool = true
     
     public static var defaultValue: AppConfiguration {
         return AppConfiguration(data: nil, hash: 0)
