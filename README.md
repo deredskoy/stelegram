@@ -114,3 +114,10 @@ Each release is built using a specific Xcode version (see `versions.json`). The 
 ```
 python3 build-system/Make/Make.py --overrideXcodeVersion build ... # Don't check the version of Xcode
 ```
+
+## Running on a Personal iPhone
+
+After generating the Xcode project, connect your iPhone via USB and open the
+generated `Telegram.xcodeproj` in Xcode. Select your device from the toolbar's
+run target menu, then press **Run**. Xcode will build and install the app on the
+device using the provisioning profiles configured earlier.
