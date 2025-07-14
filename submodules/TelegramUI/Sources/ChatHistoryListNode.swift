@@ -265,9 +265,16 @@ private func mappedInsertEntries(context: AccountContext, chatLocation: ChatLoca
                 }
                 return ListViewInsertItem(index: entry.index, previousIndex: entry.previousIndex, item: item, directionHint: entry.directionHint)
             case let .SearchEntry(theme, strings):
-                return ListViewInsertItem(index: entry.index, previousIndex: entry.previousIndex, item: ChatListSearchItem(theme: theme, placeholder: strings.Common_Search, activate: {
-                    controllerInteraction.openSearch()
-                }), directionHint: entry.directionHint)
+                return ListViewInsertItem(index: entry.index, previousIndex: entry.previousIndex, item: ChatListSearchItem(
+                    theme: theme,
+                    isEnabled: !AppConfiguration.disableSearch,
+                    placeholder: strings.Common_Search,
+                    activate: {
+                        if !AppConfiguration.disableSearch {
+                            controllerInteraction.openSearch()
+                        }
+                    }
+                ), directionHint: entry.directionHint)
         }
     }
 }
@@ -322,9 +329,16 @@ private func mappedUpdateEntries(context: AccountContext, chatLocation: ChatLoca
                 }
                 return ListViewUpdateItem(index: entry.index, previousIndex: entry.previousIndex, item: item, directionHint: entry.directionHint)
             case let .SearchEntry(theme, strings):
-                return ListViewUpdateItem(index: entry.index, previousIndex: entry.previousIndex, item: ChatListSearchItem(theme: theme, placeholder: strings.Common_Search, activate: {
-                    controllerInteraction.openSearch()
-                }), directionHint: entry.directionHint)
+                return ListViewUpdateItem(index: entry.index, previousIndex: entry.previousIndex, item: ChatListSearchItem(
+                    theme: theme,
+                    isEnabled: !AppConfiguration.disableSearch,
+                    placeholder: strings.Common_Search,
+                    activate: {
+                        if !AppConfiguration.disableSearch {
+                            controllerInteraction.openSearch()
+                        }
+                    }
+                ), directionHint: entry.directionHint)
         }
     }
 }

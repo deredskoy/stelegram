@@ -25,11 +25,13 @@ class NotificationSearchItem: ListViewItem, ItemListItem {
     }
     
     let theme: PresentationTheme
+    let isEnabled: Bool
     private let placeholder: String
     private let activate: () -> Void
     
-    init(theme: PresentationTheme, placeholder: String, activate: @escaping () -> Void) {
+    init(theme: PresentationTheme, isEnabled: Bool = true, placeholder: String, activate: @escaping () -> Void) {
         self.theme = theme
+        self.isEnabled = isEnabled
         self.placeholder = placeholder
         self.activate = activate
     }
@@ -40,7 +42,7 @@ class NotificationSearchItem: ListViewItem, ItemListItem {
             node.placeholder = self.placeholder
             
             let makeLayout = node.asyncLayout()
-            let (layout, apply) = makeLayout(self, params)
+            let (layout, apply) = makeLayout(self, params, self.isEnabled)
             
             node.contentSize = layout.contentSize
             node.insets = layout.insets
@@ -61,7 +63,7 @@ class NotificationSearchItem: ListViewItem, ItemListItem {
             if let nodeValue = node() as? NotificationSearchItemNode {
                 let layout = nodeValue.asyncLayout()
                 async {
-                    let (nodeLayout, apply) = layout(self, params)
+                    let (nodeLayout, apply) = layout(self, params, self.isEnabled)
                     Queue.mainQueue().async {
                         completion(nodeLayout, { _ in
                             apply(animation.isAnimated)
@@ -75,6 +77,7 @@ class NotificationSearchItem: ListViewItem, ItemListItem {
 
 class NotificationSearchItemNode: ListViewItemNode {
     let searchBarNode: SearchBarPlaceholderNode
+    private var disabledOverlay: ASDisplayNode?
     var placeholder: String?
     
     fileprivate var activate: (() -> Void)? {
@@ -97,26 +100,26 @@ class NotificationSearchItemNode: ListViewItemNode {
     
     override func layoutForParams(_ params: ListViewItemLayoutParams, item: ListViewItem, previousItem: ListViewItem?, nextItem: ListViewItem?) {
         let makeLayout = self.asyncLayout()
-        let (layout, apply) = makeLayout(item as! NotificationSearchItem, params)
+        let (layout, apply) = makeLayout(item as! NotificationSearchItem, params, (item as! NotificationSearchItem).isEnabled)
         apply(false)
         self.contentSize = layout.contentSize
         self.insets = layout.insets
     }
-    
-    func asyncLayout() -> (_ item: NotificationSearchItem, _ params: ListViewItemLayoutParams) -> (ListViewItemNodeLayout, (Bool) -> Void) {
+
+    func asyncLayout() -> (_ item: NotificationSearchItem, _ params: ListViewItemLayoutParams, _ isEnabled: Bool) -> (ListViewItemNodeLayout, (Bool) -> Void) {
         let searchBarNodeLayout = self.searchBarNode.asyncLayout()
         let placeholder = self.placeholder
-        
-        return { item, params in
+
+        return { [weak self] item, params, isEnabled in
             let baseWidth = params.width - params.leftInset - params.rightInset
-            
+
             let backgroundColor = item.theme.chatList.itemBackgroundColor
             
             let placeholderString = NSAttributedString(string: placeholder ?? "", font: searchBarFont, textColor: UIColor(rgb: 0x8e8e93))
             let (_, searchBarApply) = searchBarNodeLayout(placeholderString, placeholderString, CGSize(width: baseWidth - 16.0, height: 28.0), 1.0, UIColor(rgb: 0x8e8e93), item.theme.chatList.regularSearchBarColor, backgroundColor, .immediate)
             
             let layout = ListViewItemNodeLayout(contentSize: CGSize(width: params.width, height: 44.0), insets: UIEdgeInsets())
-            
+
             return (layout, { [weak self] animated in
                 if let strongSelf = self {
                     let transition: ContainedViewLayoutTransition
@@ -125,12 +128,36 @@ class NotificationSearchItemNode: ListViewItemNode {
                     } else {
                         transition = .immediate
                     }
-                    
+
                     strongSelf.searchBarNode.frame = CGRect(origin: CGPoint(x: params.leftInset + 8.0, y: 8.0), size: CGSize(width: baseWidth - 16.0, height: 28.0))
                     searchBarApply()
-                    
+
                     strongSelf.searchBarNode.bounds = CGRect(origin: CGPoint(), size: CGSize(width: baseWidth - 16.0, height: 28.0))
-                    
+
+                    if !isEnabled {
+                        if strongSelf.disabledOverlay == nil {
+                            let overlay = ASDisplayNode()
+                            strongSelf.addSubnode(overlay)
+                            strongSelf.disabledOverlay = overlay
+                            if animated {
+                                overlay.layer.animateAlpha(from: 0.0, to: 1.0, duration: 0.25)
+                            }
+                        }
+                        if let overlay = strongSelf.disabledOverlay {
+                            overlay.backgroundColor = backgroundColor.withAlphaComponent(0.4)
+                            overlay.frame = CGRect(origin: CGPoint(x: params.leftInset + 8.0, y: 8.0), size: CGSize(width: baseWidth - 16.0, height: 28.0))
+                        }
+                    } else if let overlay = strongSelf.disabledOverlay {
+                        strongSelf.disabledOverlay = nil
+                        if animated {
+                            overlay.layer.animateAlpha(from: 1.0, to: 0.0, duration: 0.3, removeOnCompletion: false, completion: { [weak overlay] _ in
+                                overlay?.removeFromSupernode()
+                            })
+                        } else {
+                            overlay.removeFromSupernode()
+                        }
+                    }
+
                     transition.updateBackgroundColor(node: strongSelf, color: backgroundColor)
                 }
             })

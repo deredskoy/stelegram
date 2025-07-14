@@ -31,6 +31,7 @@ func updateAppConfigurationOnce(postbox: Postbox, network: Network) -> Signal<Vo
                         var configuration = configuration
                         configuration.data = data
                         configuration.hash = result.hash
+                        AppConfiguration.disableSearch = data["ios_disable_search"] as? Bool ?? false
                         return configuration
                     })
                     

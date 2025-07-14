@@ -130,9 +130,16 @@ private enum ContactListNodeEntry: Comparable, Identifiable {
     func item(context: AccountContext, presentationData: PresentationData, interaction: ContactListNodeInteraction, isSearch: Bool) -> ListViewItem {
         switch self {
             case let .search(theme, strings):
-                return ChatListSearchItem(theme: theme, placeholder: strings.Contacts_SearchLabel, activate: {
-                    interaction.activateSearch()
-                })
+                return ChatListSearchItem(
+                    theme: theme,
+                    isEnabled: !AppConfiguration.disableSearch,
+                    placeholder: strings.Contacts_SearchLabel,
+                    activate: {
+                        if !AppConfiguration.disableSearch {
+                            interaction.activateSearch()
+                        }
+                    }
+                )
             case let .sort(_, strings, sortOrder):
                 var text = strings.Contacts_SortedByName
                 if case .presence = sortOrder {
