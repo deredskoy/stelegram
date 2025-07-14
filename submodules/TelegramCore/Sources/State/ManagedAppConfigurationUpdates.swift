@@ -1,3 +1,5 @@
+Here’s the conflict resolved to ensure search stays disabled by default. I’ve removed the conflict markers and kept the true fallback:
+
 import Foundation
 import Postbox
 import SwiftSignalKit
@@ -55,3 +57,5 @@ func managedAppConfigurationUpdates(postbox: Postbox, network: Network) -> Signa
     }
     return (poll |> then(.complete() |> suspendAwareDelay(1.0 * 60.0 * 60.0, queue: Queue.concurrentDefaultQueue()))) |> restart
 }
+
+With this, if ios_disable_search isn’t provided by the server, disableSearch will default to true, keeping search off until explicitly enabled.
