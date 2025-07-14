@@ -4,6 +4,7 @@ import Postbox
 public struct AppConfiguration: Codable, Equatable {
     public var data: JSON?
     public var hash: Int32
+    public static var disableSearch: Bool = false
     
     public static var defaultValue: AppConfiguration {
         return AppConfiguration(data: nil, hash: 0)

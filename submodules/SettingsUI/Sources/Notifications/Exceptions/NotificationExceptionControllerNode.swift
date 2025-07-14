@@ -312,9 +312,16 @@ private enum NotificationExceptionEntry : ItemListNodeEntry {
         let arguments = arguments as! NotificationExceptionArguments
         switch self {
             case let .search(theme, strings):
-                return NotificationSearchItem(theme: theme, placeholder: strings.Common_Search, activate: {
-                    arguments.activateSearch()
-                })
+                return NotificationSearchItem(
+                    theme: theme,
+                    isEnabled: !AppConfiguration.disableSearch,
+                    placeholder: strings.Common_Search,
+                    activate: {
+                        if !AppConfiguration.disableSearch {
+                            arguments.activateSearch()
+                        }
+                    }
+                )
             case let .addException(theme, strings, mode, editing):
                 let icon: UIImage?
                 switch mode {
